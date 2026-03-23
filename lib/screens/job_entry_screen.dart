@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../models/job_model.dart';
 import '../providers/auth_provider.dart' as app;
 import '../providers/job_provider.dart';
+import '../models/job_model.dart';
 import '../theme/app_theme.dart';
 
 class JobEntryScreen extends StatefulWidget {
-  const JobEntryScreen({super.key});
+  final JobModel? editJob;
+  const JobEntryScreen({super.key, this.editJob});
 
   @override
   State<JobEntryScreen> createState() => _JobEntryScreenState();
@@ -25,12 +26,22 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
   bool _isPaid = false;
   bool _isSubmitting = false;
 
-  final List<String> _categories = [
-    'Repair',
-    'Service',
-    'Maintenance',
-    'Installation',
-  ];
+  bool get _isEditing => widget.editJob != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      final job = widget.editJob!;
+      _nameController.text = job.customerName;
+      _mobileController.text = job.mobileNumber;
+      _priceController.text = job.price.toStringAsFixed(0);
+      _descController.text = job.description;
+      _category = job.category;
+      _serviceType = job.serviceType;
+      _isPaid = job.isPaid;
+    }
+  }
 
   @override
   void dispose() {
@@ -56,16 +67,26 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
       description: _descController.text.trim(),
       price: double.tryParse(_priceController.text) ?? 0,
       isPaid: _isPaid,
-      timestamp: now,
-      dateKey: DateFormat('yyyy-MM-dd').format(now),
+      timestamp: _isEditing ? widget.editJob!.timestamp : now,
+      dateKey: _isEditing
+          ? widget.editJob!.dateKey
+          : DateFormat('yyyy-MM-dd').format(now),
     );
 
     try {
-      await context.read<JobProvider>().addJob(uid, job);
+      if (_isEditing) {
+        await context
+            .read<JobProvider>()
+            .updateJob(uid, widget.editJob!.id!, job);
+      } else {
+        await context.read<JobProvider>().addJob(uid, job);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Job added successfully!'),
+          SnackBar(
+            content: Text(_isEditing
+                ? 'Job updated successfully!'
+                : 'Job added successfully!'),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -85,11 +106,26 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
     }
   }
 
+  Widget _sectionLabel(String label) {
+    return Text(
+      label.toUpperCase(),
+      style: const TextStyle(
+        color: AppTheme.accent,
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+        letterSpacing: 1,
+      ),
+    );
+  }
+
+  final _categories = const ['Repair', 'Service', 'Maintenance', 'Installation'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Job'),
+        title: Text(_isEditing ? 'Edit Job' : 'Add New Job'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -131,7 +167,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
 
               // Category Dropdown
               DropdownButtonFormField<String>(
-                value: _category,
+                initialValue: _category,
                 dropdownColor: AppTheme.surfaceCard,
                 decoration: const InputDecoration(
                   labelText: 'Category',
@@ -160,7 +196,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
               // Service Type Sub-dropdown (only for Service category)
               if (_category == 'Service') ...[
                 DropdownButtonFormField<String>(
-                  value: _serviceType == 'N/A' ? 'Full' : _serviceType,
+                  initialValue: _serviceType == 'N/A' ? 'Full' : _serviceType,
                   dropdownColor: AppTheme.surfaceCard,
                   decoration: const InputDecoration(
                     labelText: 'Service Type',
@@ -216,8 +252,8 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
               const SizedBox(height: 10),
               Card(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -230,7 +266,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
                             color:
                                 _isPaid ? AppTheme.success : AppTheme.danger,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Text(
                             _isPaid ? 'Paid' : 'Unpaid',
                             style: TextStyle(
@@ -238,7 +274,6 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
                                   ? AppTheme.success
                                   : AppTheme.danger,
                               fontWeight: FontWeight.w600,
-                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -246,7 +281,8 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
                       Switch(
                         value: _isPaid,
                         activeThumbColor: AppTheme.success,
-                        inactiveTrackColor: AppTheme.danger.withValues(alpha: 0.3),
+                        inactiveTrackColor:
+                            AppTheme.danger.withValues(alpha: 0.3),
                         onChanged: (val) {
                           setState(() => _isPaid = val);
                         },
@@ -257,7 +293,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Submit Button
+              // Submit button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -272,26 +308,14 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
                             color: AppTheme.primaryDark,
                           ),
                         )
-                      : const Icon(Icons.save_rounded),
-                  label: Text(_isSubmitting ? 'Saving...' : 'Save Job'),
+                      : Icon(_isEditing ? Icons.save_rounded : Icons.save),
+                  label: Text(_isEditing ? 'Update Job' : 'Save Job'),
                 ),
               ),
               const SizedBox(height: 20),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _sectionLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: AppTheme.accent,
-        fontWeight: FontWeight.w700,
-        fontSize: 14,
-        letterSpacing: 0.5,
       ),
     );
   }

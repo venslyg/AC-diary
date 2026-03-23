@@ -53,35 +53,62 @@ class FirestoreService {
         .add(job.toMap());
   }
 
+  /// Update a job
+  Future<void> updateJob(
+      String uid, String jobId, Map<String, dynamic> data) async {
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('jobs')
+        .doc(jobId)
+        .update(data);
+  }
+
+  /// Delete a job
+  Future<void> deleteJob(String uid, String jobId) async {
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('jobs')
+        .doc(jobId)
+        .delete();
+  }
+
   /// Stream of today's jobs (filtered by dateKey)
+  /// Sorting done client-side to avoid needing a composite index
   Stream<List<JobModel>> getTodayJobsStream(String uid, String dateKey) {
     return _db
         .collection('users')
         .doc(uid)
         .collection('jobs')
         .where('dateKey', isEqualTo: dateKey)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => JobModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final jobs = snapshot.docs
+          .map((doc) => JobModel.fromMap(doc.data(), doc.id))
+          .toList();
+      jobs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return jobs;
+    });
   }
 
   /// Stream of jobs for a given month (YYYY-MM prefix)
   Stream<List<JobModel>> getMonthJobsStream(String uid, String yearMonth) {
-    // dateKey is YYYY-MM-DD, so we filter by prefix range
     final start = '$yearMonth-01';
-    final end = '$yearMonth-32'; // safe upper bound
+    final end = '$yearMonth-32';
     return _db
         .collection('users')
         .doc(uid)
         .collection('jobs')
         .where('dateKey', isGreaterThanOrEqualTo: start)
         .where('dateKey', isLessThanOrEqualTo: end)
-        .orderBy('dateKey')
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => JobModel.fromMap(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) {
+      final jobs = snapshot.docs
+          .map((doc) => JobModel.fromMap(doc.data(), doc.id))
+          .toList();
+      jobs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return jobs;
+    });
   }
 }

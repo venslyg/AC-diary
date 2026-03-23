@@ -29,6 +29,10 @@ class JobProvider extends ChangeNotifier {
   double get todayRevenue =>
       _todayJobs.fold(0.0, (sum, j) => sum + j.price);
 
+  /// Get jobs filtered by category
+  List<JobModel> getJobsByCategory(String category) =>
+      _todayJobs.where((j) => j.category == category).toList();
+
   /// Listen to today's jobs in real-time
   void listenToTodayJobs(String uid) {
     _currentDateKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -49,7 +53,6 @@ class JobProvider extends ChangeNotifier {
     final duration = midnight.difference(now);
 
     Future.delayed(duration, () {
-      // Re-subscribe with the new date key
       listenToTodayJobs(uid);
     });
   }
@@ -57,6 +60,16 @@ class JobProvider extends ChangeNotifier {
   /// Add a new job
   Future<void> addJob(String uid, JobModel job) async {
     await _firestoreService.addJob(uid, job);
+  }
+
+  /// Update a job
+  Future<void> updateJob(String uid, String jobId, JobModel job) async {
+    await _firestoreService.updateJob(uid, jobId, job.toMap());
+  }
+
+  /// Delete a job
+  Future<void> deleteJob(String uid, String jobId) async {
+    await _firestoreService.deleteJob(uid, jobId);
   }
 
   /// Stream jobs for a given month

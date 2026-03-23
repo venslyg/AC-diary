@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/job_provider.dart';
 import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
+import 'category_jobs_screen.dart';
 import 'job_entry_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
@@ -125,24 +126,60 @@ class _DashboardBody extends StatelessWidget {
                         label: 'Repairs',
                         count: jobProv.totalRepairs,
                         color: AppTheme.accent,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CategoryJobsScreen(
+                                  category: 'Repair'),
+                            ),
+                          );
+                        },
                       ),
                       _StatCard(
                         icon: Icons.home_repair_service_rounded,
                         label: 'Services',
                         count: jobProv.totalServices,
                         color: AppTheme.success,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CategoryJobsScreen(
+                                  category: 'Service'),
+                            ),
+                          );
+                        },
                       ),
                       _StatCard(
                         icon: Icons.engineering_rounded,
                         label: 'Maintenance',
                         count: jobProv.totalMaintenance,
                         color: AppTheme.warning,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CategoryJobsScreen(
+                                  category: 'Maintenance'),
+                            ),
+                          );
+                        },
                       ),
                       _StatCard(
                         icon: Icons.install_desktop_rounded,
                         label: 'Installations',
                         count: jobProv.totalInstallations,
                         color: AppTheme.danger,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CategoryJobsScreen(
+                                  category: 'Installation'),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -439,6 +476,7 @@ class _StatCard extends StatelessWidget {
   final int count;
   final Color color;
   final bool fullWidth;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
@@ -446,50 +484,55 @@ class _StatCard extends StatelessWidget {
     required this.count,
     required this.color,
     this.fullWidth = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final card = Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 22),
               ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    count.toString(),
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: color,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      count.toString(),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                      ),
                     ),
-                  ),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 12,
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

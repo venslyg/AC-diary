@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../providers/auth_provider.dart' as app;
 import '../providers/job_provider.dart';
 import '../models/job_model.dart';
@@ -57,6 +60,110 @@ class _ReportsScreenState extends State<ReportsScreen> {
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
+  Future<void> _generatePdf(List<JobModel> jobs, double totalRev, double totalPaid) async {
+    final pdf = pw.Document();
+
+    final repairs = jobs.where((j) => j.category == 'Repair').length;
+    final services = jobs.where((j) => j.category == 'Service').length;
+    final maintenance = jobs.where((j) => j.category == 'Maintenance').length;
+    final installations = jobs.where((j) => j.category == 'Installation').length;
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Text('AC Diary - Monthly Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 10),
+              pw.Text('Month: ${_monthNames[_selectedMonth]} $_selectedYear', style: pw.TextStyle(fontSize: 16)),
+              pw.Text('Total Jobs: ${jobs.length}', style: pw.TextStyle(fontSize: 14)),
+              pw.SizedBox(height: 20),
+
+              // Summary
+              pw.Text('Financial Summary', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total Revenue:'),
+                  pw.Text('LKR ${totalRev.toStringAsFixed(2)}'),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total Paid:'),
+                  pw.Text('LKR ${totalPaid.toStringAsFixed(2)}'),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Outstanding:'),
+                  pw.Text('LKR ${(totalRev - totalPaid).toStringAsFixed(2)}'),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+
+              // Breakdown
+              pw.Text('Category Breakdown', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [pw.Text('Repairs:'), pw.Text('$repairs')],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [pw.Text('Services:'), pw.Text('$services')],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [pw.Text('Maintenance:'), pw.Text('$maintenance')],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [pw.Text('Installations:'), pw.Text('$installations')],
+              ),
+              pw.SizedBox(height: 30),
+
+              // Job List
+              pw.Text('Job Details', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.Divider(),
+              pw.ListView.builder(
+                itemCount: jobs.length,
+                itemBuilder: (context, index) {
+                  final job = jobs[index];
+                  return pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                    child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Text('${job.dateKey} - ${job.customerName} (${job.category})'),
+                        ),
+                        pw.Text('LKR ${job.price.toStringAsFixed(2)} [${job.isPaid ? "Paid" : "Unpaid"}]'),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'AC_Diary_Report_${_selectedYear}_$_selectedMonth',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = context.read<app.AuthProvider>().user?.uid;
@@ -66,6 +173,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
       appBar: AppBar(
         title: const Text('Monthly Reports'),
         automaticallyImplyLeading: false,
+        actions: [
+          StreamBuilder<List<JobModel>>(
+            stream: context
+                .read<JobProvider>()
+                .getMonthJobs(uid, _selectedYear, _selectedMonth),
+            builder: (context, snapshot) {
+              final jobs = snapshot.data ?? [];
+              if (jobs.isEmpty) return const SizedBox.shrink();
+
+              final totalRev = jobs.fold(0.0, (sum, j) => sum + j.price);
+              final totalPaid = jobs.where((j) => j.isPaid).fold(0.0, (sum, j) => sum + j.price);
+
+              return IconButton(
+                icon: const Icon(Icons.picture_as_pdf_rounded, color: AppTheme.accent),
+                tooltip: 'Export PDF',
+                onPressed: () => _generatePdf(jobs, totalRev, totalPaid),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
