@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "387483385056",
+    "project_id": "ac-diary-aa61b",
+    "storage_bucket": "ac-diary-aa61b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:387483385056:android:bd8bb2e62c13270534e485",
+        "android_client_info": {
+          "package_name": "com.vensly.ac_diary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVd9O1Cxyppg691JCYGb7PtZMkDsdCVBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
