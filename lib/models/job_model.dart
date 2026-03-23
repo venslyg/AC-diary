@@ -6,6 +6,7 @@ class JobModel {
   final String mobileNumber;
   final String category; // Repair, Service, Maintenance, Installation
   final String serviceType; // Full, Normal, N/A
+  final String description;
   final double price;
   final bool isPaid;
   final DateTime timestamp;
@@ -17,6 +18,7 @@ class JobModel {
     required this.mobileNumber,
     required this.category,
     required this.serviceType,
+    this.description = '',
     required this.price,
     required this.isPaid,
     required this.timestamp,
@@ -30,6 +32,7 @@ class JobModel {
       mobileNumber: map['mobileNumber'] ?? '',
       category: map['category'] ?? 'Repair',
       serviceType: map['serviceType'] ?? 'N/A',
+      description: map['description'] ?? '',
       price: (map['price'] ?? 0).toDouble(),
       isPaid: map['isPaid'] ?? false,
       timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -43,6 +46,7 @@ class JobModel {
       'mobileNumber': mobileNumber,
       'category': category,
       'serviceType': serviceType,
+      'description': description,
       'price': price,
       'isPaid': isPaid,
       'timestamp': Timestamp.fromDate(timestamp),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/auth_provider.dart' as app;
 import '../theme/app_theme.dart';
 
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
   bool _isLogin = true;
   bool _obscurePassword = true;
+  bool _rememberMe = true;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -48,6 +50,16 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final authProv = context.read<app.AuthProvider>();
+
+    // Set persistence based on Remember Me
+    try {
+      await FirebaseAuth.instance.setPersistence(
+        _rememberMe ? Persistence.LOCAL : Persistence.SESSION,
+      );
+    } catch (_) {
+      // setPersistence may not be supported on all platforms
+    }
+
     bool success;
     if (_isLogin) {
       success = await authProv.signIn(
@@ -169,7 +181,39 @@ class _LoginScreenState extends State<LoginScreen>
                               ? 'Min 6 characters'
                               : null,
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 16),
+
+                        // Remember Me
+                        if (_isLogin)
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: _rememberMe,
+                                  activeColor: AppTheme.accent,
+                                  checkColor: AppTheme.primaryDark,
+                                  side: const BorderSide(color: AppTheme.textSecondary),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() => _rememberMe = val ?? true);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Remember me',
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 20),
 
                         // Submit button
                         SizedBox(

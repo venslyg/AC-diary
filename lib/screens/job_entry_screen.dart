@@ -18,6 +18,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
   final _nameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _priceController = TextEditingController();
+  final _descController = TextEditingController();
 
   String _category = 'Repair';
   String _serviceType = 'N/A';
@@ -36,6 +37,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
     _nameController.dispose();
     _mobileController.dispose();
     _priceController.dispose();
+    _descController.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,7 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
       mobileNumber: _mobileController.text.trim(),
       category: _category,
       serviceType: _category == 'Service' ? _serviceType : 'N/A',
+      description: _descController.text.trim(),
       price: double.tryParse(_priceController.text) ?? 0,
       isPaid: _isPaid,
       timestamp: now,
@@ -190,6 +193,21 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
                   if (double.tryParse(v) == null) return 'Enter valid number';
                   return null;
                 },
+              ),
+              const SizedBox(height: 14),
+
+              // Description
+              TextFormField(
+                controller: _descController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                  alignLabelWithHint: true,
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.only(bottom: 42),
+                    child: Icon(Icons.notes_rounded, color: AppTheme.accent),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
 
