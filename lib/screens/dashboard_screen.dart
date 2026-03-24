@@ -4,6 +4,7 @@ import '../providers/job_provider.dart';
 import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
 import 'category_jobs_screen.dart';
+import 'history_screen.dart';
 import 'job_entry_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
@@ -20,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = const [
     _DashboardBody(),
+    HistoryScreen(),
     ReportsScreen(),
     SettingsScreen(),
   ];
@@ -30,11 +32,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
         onTap: (i) => setState(() => _currentIndex = i),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_rounded),
             label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_rounded),
+            label: 'History',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart_rounded),

@@ -72,6 +72,11 @@ class JobProvider extends ChangeNotifier {
     await _firestoreService.deleteJob(uid, jobId);
   }
 
+  /// Stream all jobs for history
+  Stream<List<JobModel>> getAllJobs(String uid) {
+    return _firestoreService.getAllJobsStream(uid);
+  }
+
   /// Stream jobs for a given month
   Stream<List<JobModel>> getMonthJobs(String uid, int year, int month) {
     final yearMonth =

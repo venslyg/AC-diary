@@ -111,4 +111,21 @@ class FirestoreService {
       return jobs;
     });
   }
+
+  /// Stream of all jobs for history (limit 500 to save reads)
+  Stream<List<JobModel>> getAllJobsStream(String uid) {
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('jobs')
+        .limit(500)
+        .snapshots()
+        .map((snapshot) {
+      final jobs = snapshot.docs
+          .map((doc) => JobModel.fromMap(doc.data(), doc.id))
+          .toList();
+      jobs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return jobs;
+    });
+  }
 }
