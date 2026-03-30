@@ -8,6 +8,7 @@ import 'history_screen.dart';
 import 'job_entry_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+import 'overall_summary_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -113,9 +114,25 @@ class _DashboardBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  Text(
-                    "Today's Summary",
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Today's Summary",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const OverallSummaryScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text('Overall Summary'),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
 
