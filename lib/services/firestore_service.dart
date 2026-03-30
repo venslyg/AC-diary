@@ -45,8 +45,8 @@ class FirestoreService {
   // ─── JOB OPERATIONS ───
 
   /// Add a new job
-  Future<void> addJob(String uid, JobModel job) async {
-    await _db
+  void addJob(String uid, JobModel job) {
+    _db
         .collection('users')
         .doc(uid)
         .collection('jobs')
@@ -54,9 +54,9 @@ class FirestoreService {
   }
 
   /// Update a job
-  Future<void> updateJob(
-      String uid, String jobId, Map<String, dynamic> data) async {
-    await _db
+  void updateJob(
+      String uid, String jobId, Map<String, dynamic> data) {
+    _db
         .collection('users')
         .doc(uid)
         .collection('jobs')
@@ -65,8 +65,8 @@ class FirestoreService {
   }
 
   /// Delete a job
-  Future<void> deleteJob(String uid, String jobId) async {
-    await _db
+  void deleteJob(String uid, String jobId) {
+    _db
         .collection('users')
         .doc(uid)
         .collection('jobs')

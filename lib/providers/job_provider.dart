@@ -58,18 +58,18 @@ class JobProvider extends ChangeNotifier {
   }
 
   /// Add a new job
-  Future<void> addJob(String uid, JobModel job) async {
-    await _firestoreService.addJob(uid, job);
+  void addJob(String uid, JobModel job) {
+    _firestoreService.addJob(uid, job);
   }
 
   /// Update a job
-  Future<void> updateJob(String uid, String jobId, JobModel job) async {
-    await _firestoreService.updateJob(uid, jobId, job.toMap());
+  void updateJob(String uid, String jobId, JobModel job) {
+    _firestoreService.updateJob(uid, jobId, job.toMap());
   }
 
   /// Delete a job
-  Future<void> deleteJob(String uid, String jobId) async {
-    await _firestoreService.deleteJob(uid, jobId);
+  void deleteJob(String uid, String jobId) {
+    _firestoreService.deleteJob(uid, jobId);
   }
 
   /// Stream all jobs for history

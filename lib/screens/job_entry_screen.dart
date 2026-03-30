@@ -75,11 +75,11 @@ class _JobEntryScreenState extends State<JobEntryScreen> {
 
     try {
       if (_isEditing) {
-        await context
+        context
             .read<JobProvider>()
             .updateJob(uid, widget.editJob!.id!, job);
       } else {
-        await context.read<JobProvider>().addJob(uid, job);
+        context.read<JobProvider>().addJob(uid, job);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
